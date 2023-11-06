@@ -1,0 +1,86 @@
+cd /etc/httpd/conf
+nano httpd.conf
+
+==================================
+AllowOverride All
+==================================
+
+cd /var/www/html/descargas
+nano .htaccess
+==========
+
+AuthType Basic
+AuthName "Área restringida"
+AuthUserFile /etc/httpd/passwords/.htpasswd
+Require valid-user
+
+===========PAM========
+desde root
+sudo mkdir -p /etc/httpd/passwords
+sudo chmod 755 /etc/httpd/passwords
+htpasswd -c /etc/httpd/passwords/.htpasswd danny
+
+http://192.168.88.150/descargas/
+
+
+-------------------hosts virtuales-------------------
+sudo setenforce 0
+getenforce
+mkdir -p /var/www/dannysanto.com/html
+mkdir -p /var/www/gabrieltaipicania.com/html
+chown -R apache:apache /var/www/dannysanto.com/
+chown -R apache:apache /var/www/gabrieltaipicania.com/
+chmod -R 755 /var/www/
+
+
+
+nano /var/www/dannysanto.com/html/index.html
+==================================
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hola, a todos</title>
+</head>
+<body>
+    <h1>Soy Danny Santo</h1>
+    creacion de virtual host
+</body>
+</html>
+================================
+
+
+nano /var/www/gabrieltaipicania.com/html/index.html
+==================================
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hola, a todos</title>
+</head>
+<body>
+    <h1>Hola, Mundo</h1>
+    creacion de virtual host
+</body>
+</html>
+================================
+
+
+
+nano /etc/httpd/conf/httpd.conf
+-----------------------------
+<Virtualhost *:80>
+	  ServerName www.dannysanto.com
+	  ServerAlias dannysanto.com
+	  DocumentRoot /var/www/dannysanto.com/html
+        ErrorLog /var/www/dannysanto.com/error.log
+        CustomLog /var/www/dannysanto.com/request.log combined
+</VirtualHost>
+
+<VirtualHost *:80>
+        ServerName www.gabrieltaipicania.com
+	  ServerAlias gabrieltaipicania.com
+	  DocumentRoot /var/www/gabrieltaipicania.com/html
+        ErrorLog /var/www/gabrieltaipicania.com/error.log
+        CustomLog /var/www/gabrieltaipicania.com/request.log combined
+</VirtualHost>
+
+

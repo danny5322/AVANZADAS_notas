@@ -1,0 +1,165 @@
+*para ver la version del docker
+docker -v
+
+*para ver los comandos de la herramienta
+docker -h
+
+*para ver los comandos de imagenes
+docker images
+
+*para arancar docker
+systemctl start docker
+systemctl status docker
+
+
+*para que arranque directamente el docker
+systemctl enable docker
+
+*para descargar una maquina, sino especifico con :"tag de la pagina"
+*se descarga la ultima 
+docker pull ubuntu
+
+#ubuntu comparte las caracteristica de hadwar
+
+*para ver los comandos de imagenes que ya debe aparecer la de ubuntu
+docker images
+
+*para inspeccionar la maquina de ubuntu
+docker inspect ubuntu
+
+*del repositorio de imagenes jala la maquina, en caso de no tener va a descargar la maquina
+*que la maquina se levante ejecute el programa en su shell y se vuelva a apagar el contenedor
+
+docker run ubuntu echo "hola mundo"
+
+*para revisar contenedor corriendo
+docker ps
+
+*para revisar maquinas apagadas, todos los contenedores que se van creando
+*una instantanea que se pone sobre la imagen que yo saque
+
+docker ps -a
+
+*para generar un contenedor con un nombre especifico
+docker run --name archivo1 ubuntu echo "hola mundo 2"
+
+*que exista una interaccion con la maquina
+docker run -it ubuntu /bin/bash
+
+**informacion del contenedor hasta cambia lo que acompaña a root
+ls
+
+
+uname -a
+*para ver la version de ubuntu
+cat /etc/lsb-release
+
+*para conectarme al contenedor que este corriendo
+docker exec -it 4bdfa870e417 /bin/sh
+ 
+whoami
+
+*para salir del contenedor
+exit o crtl+d
+
+
+*dentro del contenedor 4bdfa870e417, el ubuntu no tiene nada que ver con el alma linux
+*que esta corriendo
+apt-get update 
+
+*apartir de este contendor genero una imagen la cual pueda compartir
+apt-get install git
+
+
+salimos del contendor
+exit
+
+detenemos el contenedor
+docker stop 4bdfa870e417
+
+voy a sacar respaldo del contenedor 
+docker commit -m "git" -a "danny" 4bdfa870e417 git/ubuntu:v1
+
+aparece un sha propio de la imagen
+debe aparecer la nueva maquina
+docker images
+
+
+
+
+
+
+con esta nueva imagen puedo generar otros contenedores-especificando que utilizamos el bash
+
+docker run -it --name git git/ubuntu:v1 /bin/bash
+
+para instalar la maquina de git o verificar si esta instalado
+dpkg -l | grep git
+
+a partir de la maquina de ubuntu vamos a generar un contenedor y
+a generar un contenedor a partir de la maquina de ubuntu con apache2
+fuera del contenedor
+docker run -it --name apache ubuntu /bin/bash
+
+
+apt-get update
+apt-get install apache2
+despues de actualizar 
+
+
+service apache2 status
+para que corra
+service apache2 start
+service apache2 status
+
+para crear una imagen 
+docker commit -m "Install apache" -a "danny" e5d9ccacbe3f apache/ubuntu:v1
+
+
+
+*generar contedor bacround
+docker run -d --name server apache/ubuntu:v1 /usr/sbin/apache2ctl -D FOREGROUND
+
+para ver procesos corriendo dentro del contenedor server
+
+para entrar al contenedor
+docker exec -it server /bin/sh
+
+dentro del contenedor ponemos
+apt-get install curl
+curl http://127.0.0.1 less
+
+eliminanos el conteneder
+docker rm server
+
+
+vamos a exponer el servicio de apache que esta en el 8000 al
+
+mapear puertos
+
+docker 
+
+
+
+desde root
+docker network ls
+
+
+
+1
+
+todos compartan informacion entre todos
+con un archivo bash que me permita sacar respaldo de la base de datos cada 5 minutos
+
+con crontab programo tareas (llamo al archivo ssh que saque respaldo cada 5 minutos)
+
+2
+lo mismo pero con docker compost
+generar un archivo para hacer lo mismo
+tenemos que utilizar dockerfile(es un archivo que me permite generar contenedores)
+
+3
+manejo de kuvernets
+
+practica mas informe
+

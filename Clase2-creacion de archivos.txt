@@ -1,0 +1,151 @@
+
+
+*para ver el directorio
+pwd
+
+*para crear la carpeta
+mkdir scrip
+
+*para cambiar el nombre
+mv scrip scripts
+
+#con "ls" veo la lista de contenido
+
+*para ingresar a la carpeta
+cd scripts
+
+*dentro de "scrips" vamos a crear nuestros archivos
+
+
+#para imprimir en pantalla el mensaje
+
+vi ejemplo01.sh
+-#!/bin/bash     #apunta a la ruta del interprete de comandos (determina archivo de tipo script) para que se ejecute el archivo
+-echo "hola"     #para imprimir por consola
+
+*para permisos de ejecucion
+chmod a+x ejemplo01.sh
+
+*para ejecutar
+./ejemplo01.sh
+
+
+
+#para uso de variables
+
+vi ejemplo02.sh
+-#!/bin/bash                #apunta a la ruta del interprete de comandos (determina archivo de tipo script) para que se ejecute el archivo
+-x="esta es una variable"
+-echo $x                    #para imprimir por consola
+
+*para permisos de ejecucion
+chmod a+x ejemplo02.sh
+
+*para ejecutar
+./ejemplo02.sh
+
+
+
+
+#quiero ejecutar un comando
+
+vi ejemplo03.sh
+-#!/bin/bash                #apunta a la ruta del interprete de comandos (determina archivo de tipo script) para que se ejecute el archivo
+-echo $(pwd)                #para ejecutar el comando
+
+*para permisos de ejecucion
+chmod a+x ejemplo03.sh
+
+*para ejecutar
+./ejemplo03.sh
+
+
+#para obtener fecha
+date +%d
+date +%d%m%y
+
+
+
+#donde se configuraban las tarjetas de red
+cd /etc/sysconfig/network-scripts
+
+*para leer el archivo
+cat readme-ifcfg-rh.txt
+
+*creo mi tarjeta
+vi ifcfg-ens161
+
+
+
+#vamos otra ves con otra tarjeta
+
+#donde se configuraban las tarjetas de red
+cd /etc/sysconfig/network-scripts
+
+*para leer el archivo
+cat readme-ifcfg-rh.txt
+
+*creo mi tarjeta con el siguiente archivo
+vi ifcfg-ens256
+
+device=ens256
+bootproto=static
+dns1=8.8.8.8
+gateway=10.10.10.5
+ipaddr=10.10.10.10
+netmask=255.255.255.0
+nm_controlled=no
+onboot=yes
+type=ethernet
+
+
+#Escojo mi tarjeta 4 de vmware como host only con 10.10.10.0,
+#y configuro para estatico
+
+#para reiniciar la tarjeta
+
+systemctl restart NetworkManager
+ip add
+ip link set ens256 down
+ip link set ens256 up
+ip add
+
+
+BOOTPROTO=none
+DEVICE=ens256
+HWADDR=00:0c:29:0f:87:01
+IPADDR=10.10.10.15
+GATEWAY=10.10.10.5
+DNS1=8.8.8.8
+NETMASK=255.255.255.0
+ONBOOT=yes
+STARTMODE=auto
+TYPE=Ethernet
+
+******************************
+BOOTPROTO=none
+DEVICE=ens256
+IPADDR=10.10.10.15
+GATEWAY=10.10.10.5
+DNS1=8.8.8.8
+NETMASK=255.255.255.0
+ONBOOT=yes
+STARTMODE=auto
+TYPE=Ethernet
+******************************
+
+
+*vamos a crear dentro de scripts un archivo ejemplo04.sh
+*quiero sacar una copia de donde se encuentra el archivo de configuracion
+*un scrip que permita sacar respaldo de la configuracion
+
+cd scripts
+vi ejemplo04.sh
+
+-#!/bin/bash
+-nombre="red"$(date +%d%m%y)".conf"
+-cp /etc/sysconfig/network-scripts/ifcfg-ens256 $nombre
+
+para ver que se haya obtenido el respaldo
+./ejemplo04.sh
+ls -l

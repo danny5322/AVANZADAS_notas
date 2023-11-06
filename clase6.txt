@@ -1,0 +1,255 @@
+
+dnf update
+
+instalamos el servicio de apache y el modulo
+para lo que son certificados
+dnf install -y httpd mod_ssl
+dnf install epel-release
+
+
+
+systemctl status httpd
+systemctl start httpd
+systemctl enable httpd
+
+
+para que el firewall admita el servicio de http, a traves
+del puerto 80
+
+para apache
+
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-service=https
+firewall-cmd --reload
+
+para instalar la base de datos de maria db
+
+dnf install mariadb-server -y
+
+systemctl status mariadb
+systemctl start mariadb
+systemctl enable mariadb
+
+establecemos seguridad
+
+mysql_secure_installation
+enter
+yes
+yes
+yes
+no
+yes
+yes
+
+para comprobar si funciona el servicio
+mysql -u root -p
+para verificar si ingresamos
+SHOW DATABASES;
+exit
+
+
+en root instalamos el modulo de php
+para poder programar en las paginas
+
+sudo yum install php php-mysqlnd
+
+
+systemctl restart httpd
+
+php -v
+
+creamos una pagina en php
+por defecto se guardan aca
+el archivo de configuracion apunta a la direccion
+cd /var/www/html/
+
+[root@server ~]# cd /var/www/html/
+[root@server html]#
+
+
+ls
+archivo de configuracion de apache
+nano /etc/httpd/conf/httpd.conf
+
+
+!!!!!!!!!!!
+DocumentRoot (es el que me permite cambiar las paginas)
+!!!!!!!!!!!!
+
+en el directorio
+/var/www/html
+[root@server html]# nano info.php
+
+
+nano info.php
+!!!!!!!!!!!!!!!!
+<?php
+phpinfo();
+?>
+!!!!!!!!!!!!!!!!
+
+vamos al navegador y responde con la info de php
+y se que esta habilitado el modulo de php
+puedo ver algunas variables del sistema
+http://192.168.88.148/info.php
+
+ahora para instalar php my admin
+dnf install phpmyadmin
+
+systemctl restart httpd
+
+192.168.88.148/phpmyadmin
+
+dado que no puedo ver por que no tengo un permiso
+se edita el archivo
+
+nano /etc/httpd/conf.d/phpMyAdmin.conf
+!!!!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!
+
+cd /etc/httpd/conf.d
+ls
+y sacamos una copia phpMyAdmin_respaldo
+cp phpMyAdmin.conf phpMyAdmin_respaldo
+
+nano phpMyAdmin.conf
+rm phpMyAdmin.conf
+nano phpMyAdmin.conf
+!!!!!!!!!!!!!!!!!!!!!!!!!
+Alias /phpMyAdmin /usr/share/phpMyAdmin
+Alias /phpmyadmin /usr/share/phpMyAdmin
+<Directory /usr/share/phpMyAdmin/>
+   AddDefaultCharset UTF-8
+   <IfModule mod_authz_core.c>
+     # Apache 2.4
+     <RequireAny>
+      Require all granted
+     </RequireAny>
+   </IfModule>
+   <IfModule !mod_authz_core.c>
+     # Apache 2.2
+     Order Deny,Allow
+     Deny from All
+     Allow from 127.0.0.1
+     Allow from ::1
+   </IfModule>
+</Directory>
+<Directory /usr/share/phpMyAdmin/setup/>
+   <IfModule mod_authz_core.c>
+     # Apache 2.4
+     <RequireAny>
+       Require all granted
+     </RequireAny>
+   </IfModule>
+   <IfModule !mod_authz_core.c>
+     # Apache 2.2
+     Order Deny,Allow
+     Deny from All
+     Allow from 127.0.0.1
+     Allow from ::1
+   </IfModule>
+</Directory>
+!!!!!!!!!!!!!!!!!!!!!!!!!
+
+systemctl restart httpd
+
+
+
+
+como trabajo
+.htacce
+
+
+vamos a consultar sobre .htacces 
+configurar la seguridad para que no se muestre
+en la cual me pida una clave para ver los archivos
+y esta clave solo van a poder ingresar los usuarios del sistema
+consultar la autenticacion con pam
+
+consultar lo que son los virtual host en la cual vamos a generar dos paginas diferentes
+1 nombre apellido
+2 2do nombre 2apellido
+
+tener diferentes dominios con la misma direccion ip
+
+
+
+
+
+
+
+
+AuthType Basic
+AuthName "Área restringida"
+AuthUserFile /etc/httpd/passwords/.htpasswd
+Require valid-user
+
+
+
+
+
+
+
+
+
+
+
+  455  mkdir descargas
+  456  touch ver.txt
+  457  ls
+  458  rm ver.txt
+  459  cd descargas/
+  460  touch ver.txt
+  461  ls
+  462  cd /var/www/html/
+  463  ls
+  464  cd descargas
+  465  ls
+  466  nano ver
+  467  cd
+  468  cd /var/www/html/
+  469  ls
+  470  cd
+  471  cd /var/www/html/
+  472  ls
+  473  nano .htaccess
+  474  cd
+  475  cd /etc/httpd/passwords
+  476  cd /etc/httpd/
+  477  mkdir passwords
+  478  htpasswd -c /etc/httpd/passwords danny
+  479  ls -la
+  480  cd /etc/httpd/
+  481  cd passwords/
+  482  htpasswd -c /etc/httpd/passwords danny
+  483  ls -la
+  484  htpasswd -c /etc/httpd/passwords/.htpasswd danny
+  485  ls -la
+  486  cd .htpasswd
+  487  cd /etc/httpd/conf
+  488  nano httpd.conf
+  489  systemctl restart httpd
+  490  cd /etc/httpd/
+  491  ls
+  492  cd /var/www/html/
+  493  ls
+  494  cd descargas/
+  495  ls
+  496  ls -la
+  497  ls
+  498  cd
+  499  cd /var/www/html/
+  500  ls
+  501  ls -la
+  502  mv .htaccess /var/www/html/descargas
+  503  ls -la
+  504  cd descargas/
+  505  ls
+  506  ls -la
+  507  nano .htaccess
+  508  systemctl restart httpd
+  509  nano .htaccess
+  510  systemctl restart httpd
+  511  hystory
+  512  history

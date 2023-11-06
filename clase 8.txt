@@ -1,0 +1,76 @@
+SISTEMAS DE CONTROL DE VERSIONES
+permite administrar los cambios en un conjunto de archivos
+
+beneficios
+permite la colaboracion, varias personas trabajan en un archivo
+podemos saber que persona edita el archivo
+podemos trabajar desde cualquier lugar
+
+
+se lo puede trabajr
+local
+central
+distribuida
+
+
+local: utiliza una base de datos para dar seguimiento
+
+centralizado: utiliza un modelo de servidor cliente
+lo malo es que una persona ocupa el archivo otra persona tiene que esperar
+
+distribuido: el cliente baja una version que se encuentra en el servidor
+a su maquina lo modifica y lo vuelven a subir
+se puede saber quien esta modificando el archivo
+
+Git es una herramienta de codigo abierto  que sirve para control
+de versiones que almacena datos como instantaneas
+
+
+git esta formada por 3 etapas 
+*repositorio
+*directorio de trabajo
+*area de ensayo
+y 3 estados
+*committed
+*modifi
+*
+
+
+git tiene repositorio local vs remoto
+
+
+que es un branching?
+permite a los usuarios trabajar en el codigo de forma independiente sin
+afectar al codigo principal del repositorio.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,49 @@
+en el ususario prueva vamos a crear una clave publica y una privada
+ssh-keygen
+escribo la frase y luego le encriptamos
+hola soy danny
+
+
+ls -l .ssh
+
+para ver clave encriptada
+
+
+cd .ssh
+ls -la
+
+creamos un nuevo archivo
+cat id_rsa.pub >> authorized_keys
+damos permiso 755 
+
+chmod 755 authorized_keys
+chmod 777 id_rsa
+
+sudo nano /etc/ssh/sshd_config
+
+sudo systemctl restart sshd
+
+scp prueba@192.168.88.148:/home/prueba/.ssh/id_rsa C:\Users\Usuario\Documents\CARPETA
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+en putty  gen
+cargamos el archivo en load
+
+y ponemos save private key
+!!!!!!!!!!!!!!!!!!!
+
+ssh/auth/credenciales
+
+
+
+
+en root
+gpasswd -a prueba wheel
+systemctl restart sshd
+
+ssh-keygen
+
+3072
+
+
+

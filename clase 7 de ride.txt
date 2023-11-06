@@ -1,0 +1,289 @@
+RAID
+TENER DISCOS REDUNDANTES PARA GARANTIZAR QUE LA INFORMACION NO SE PIERDA
+
+RAID 0
+tengo los discos a la par y en los dos discos se va grabando
+para mayor velocidad
+
+si se daña un disco se pierde toda la informacion
+
+RAID 1
+UN DISCO ES EL REFLEJO DE OTRO
+
+SI TENGO UN DISCO DE 2
+TERAS, SOLO PODRIA GRABAR EN 1 T
+
+RAID 5
+
+PUEDE SOBREVIVIR A LA FALLA DE UN DISCO
+sin perder los datos, los demas discos se encargan de recontruir la informacion
+la paridad se puede guardar en cualquier disco
+
+
+RAID 1-0
+los datos se dividen en bloque y se duplican en discos separados
+
+
+
+averiguar como configurar en la vios los raid
+
+
+
+para ver los discos por bloque
+lsblk
+
+
+en la nueva maquina nueva de raid
+cat /proc/mdstat
+
+
+en mi maquina que agrege dos discos de 1g
+
+nvme0n2            259:3    0    1G  0 disk
+nvme0n3            259:4    0    1G  0 disk
+
+
+
+
+fdisk /dev/nvme0n2
+n
+p
+1
+enter
+enter
+seleccion de tipo de formato
+t
+l
+
+FD
+p
+
+
+Command (m for help): p
+Disk /dev/nvme0n2: 1 GiB, 1073741824 bytes, 2097152 sectors
+Disk model: VMware Virtual NVMe Disk
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x68ca38bb
+
+Device         Boot Start     End Sectors  Size Id Type
+/dev/nvme0n2p1       2048 2097151 2095104 1023M fd Linux raid autodetect
+
+w
+
+
+fdisk /dev/nvme0n3
+n
+p
+1
+enter
+enter
+seleccion de tipo de formato
+t
+l
+
+FD
+p
+
+
+Command (m for help): p
+Disk /dev/nvme0n2: 1 GiB, 1073741824 bytes, 2097152 sectors
+Disk model: VMware Virtual NVMe Disk
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x68ca38bb
+
+Device         Boot Start     End Sectors  Size Id Type
+/dev/nvme0n3p1       2048 2097151 2095104 1023M fd Linux raid autodetect
+
+w
+
+
+
+instalar una herramienta para administrar los raid
+dnf install -y mdadm
+
+
+ya formateados los discos vamos a crear el raid
+l es el nivel tipo raid 1, n es el numero de discos
+
+mdadm -C /dev/md0 -l 1 -n 2 /dev/nvme0n2p1 /dev/nvme0n3p1
+cat /proc/mdstat
+
+le doy un formato al raid que he generado
+mkfs.ext4 /dev/md0
+
+para montar el disco
+mount /dev/md0 /mnt
+
+voy a sacar un respaldo de la carpeta ect y le comprimo
+se va a guardar en mt con ese nombre
+tar zcf /mnt/backup-ect.tar.gz /etc/
+
+
+[root@server ~]# ls /mnt/
+backup-ect.tar.gz  lost+found
+
+
+para monitorear el disco
+cat /proc/mdstat
+
+declaramos una falla en el disco
+mdadm -f /dev/md0 /dev/nvme0n3p1
+
+
+
+removemos el disco como simulacion
+
+mdadm -r /dev/md0 /dev/nvme0n3p1
+
+
+
+[root@server ~]# ls /mnt/
+backup-ect.tar.gz  lost+found
+[root@server ~]# ^C
+[root@server ~]# mdadm -f /dev/md0 /dev/nvme0n3p1
+mdadm: set /dev/nvme0n3p1 faulty in /dev/md0
+[root@server ~]# cat /proc/mdstat
+Personalities : [raid1]
+md0 : active raid1 nvme0n3p1[1](F) nvme0n2p1[0]
+      1046528 blocks super 1.2 [2/1] [U_]
+
+unused devices: <none>
+[root@server ~]# mdadm -r /dev/md0 /dev/nvme0n3p1
+mdadm: hot removed /dev/nvme0n3p1 from /dev/md0
+[root@server ~]# cat /proc/mdstat
+Personalities : [raid1]
+md0 : active raid1 nvme0n2p1[0]
+      1046528 blocks super 1.2 [2/1] [U_]
+
+unused devices: <none>
+
+
+
+
+ya solo tenemos 1 disco
+tar zcf /mnt/backup2-ect.tar.gz /etc/
+
+
+
+sfdisk -d /dev/nvme0n2p1 | sfdisk /dev/nvme0n3p1
+
+
+anadir el nuevo disco al ride
+mdadm -a /dev/md0 /dev/nvme0n3p1
+
+[root@server ~]# cat /proc/mdstat
+Personalities : [raid1]
+md0 : active raid1 nvme0n3p1[2] nvme0n2p1[0]
+      1046528 blocks super 1.2 [2/2] [UU]
+
+unused devices: <none>
+[root@server ~]# ls /mnt/
+backup-ect.tar.gz  backup2-ect.tar.gz  lost+found
+
+
+lo anterior esta en discos redundantes
+
+
+para elimunar el raid
+
+desmontamos el raid
+
+umount /dev/md0
+detenemos
+mdadm --stop /dev/md0
+limpiamos los discos
+mdadm --zero-superblock /dev/nvme0n3p1
+mdadm --zero-superblock /dev/nvme0n2p1
+
+[root@server ~]# lsblk
+NAME               MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sr0                 11:0    1  1.7G  0 rom
+nvme0n1            259:0    0   20G  0 disk
+├─nvme0n1p1        259:1    0  800M  0 part /boot
+└─nvme0n1p2        259:2    0 19.2G  0 part
+  ├─almalinux-root 253:0    0  5.5G  0 lvm  /
+  ├─almalinux-swap 253:1    0    1G  0 lvm  [SWAP]
+  ├─almalinux-var  253:2    0  7.2G  0 lvm  /var
+  ├─almalinux-tmp  253:3    0    2G  0 lvm  /tmp
+  └─almalinux-home 253:4    0  3.5G  0 lvm  /home
+nvme0n2            259:3    0    1G  0 disk
+└─nvme0n2p1        259:5    0 1023M  0 part
+nvme0n3            259:4    0    1G  0 disk
+└─nvme0n3p1        259:7    0 1023M  0 part
+
+
+
+**************************************************************************
+para aumentar mas espacio en el disco
+a la particion /var que es donde se guarda la informacion
+hacemos particiones para asi el var este lleno la maquina va arrancar
+
+df -h
+
+
+
+formatear el disco primero
+lsblk
+
+fdisk /dev/nvme0n2
+n
+p
+3
+enter
+enter
+w
+
+lsblk
+
+
+
+pvcreate /dev//nvme0n2p1
+vgdisplay
+
+
+ver cuanto espacio hay asignado
+
+
+//////vgdisplay alamalinux | grep "Free"
+
+vgextend alamalinux /dev/nvme0n2p1
+
+lvdisplay
+
+lvextend -L+20G /dev/alamalinux/var
+
+resize2fs /dev/alamalinux/var
+
+df -h
+
+
+
+hacer una investif=gacion sobre open stak, levantar contenedores, maquinas virtuales
+a traves de la nube
+
+la idea es aprender sobre open stak
+levantar una infraestructura de red completa
+hacer un servidor cloud pivado
+
+tambien se puede hacer con mirantis
+se trabaja por modulos
+hasta el 20 de noviembre
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,159 @@
+CLASE 1
+
+**revisamos el demonio o sevicio y dice que si la maquina se reinicia el va a levantarse nuevamente
+systemctl status sshd
+
+**crear usuario
+useradd prueba
+passwd prueba
+
+
+**para utilizar if config Y nano
+**dnf es el gestor de paquetes de lo que es la red de distribucion red had
+dnf install net-tools -y
+
+
+**para para en este caso dar acceso al usuario prueba 1 por ssh
+vi /etc/ssh/sshd_config
+
+
+**para establecer numeros
+:se nu
+
+**linea 44, para que el usuario prueba pueda ingresar por ssh
+AllowUsers prueba
+
+**para guardar (guarda y sale forzando)
+:wq!
+
+**para reiniciar
+systemctl restart sshd
+
+
+
+
+***Apartir de este paso vamos a entrar por SSH en putty a
+***traves del usuario prueba.
+
+#DENTRO DEL ROOT
+**para poder conectarme como ROOT (conectado como prueba)
+su -
+
+**creamos el usuario "prueba2" y "prueba3" con contraseñas de igual nombre
+useradd prueba2
+passwd prueba2
+
+useradd prueba3
+passwd prueba3
+
+
+**ROOT: para ver si esta instalado el sudo, vamos a editar el archivo visudo
+visudo
+
+**en user  MACHINE=COMMANDS (este usuario "prueba"
+**para ejecutar cualquier comando va a tener que escribir el sudo adelante)
+
+prueba ALL=(ALL)   ALL
+##SALIMOS DE ROOT
+exit
+
+##DENTRO DE PRUEBA
+
+**dnf es el manejador de paquetes de red hat (debian de ubuntu :en lugar de apt get)
+sudo dnf install -y nano
+
+**priviliegios para prueba2 solo para comando tar(descomprimir archivos),
+**useradd(para crear usuarios), top(para ver los usuarios que estan corriendo)
+
+which useradd
+/usr/sbin/useradd
+
+which tar
+/usr/bin/tar
+
+which top
+/usr/bin/top
+
+**para instalar tar
+sudo dnf install tar
+
+**dentro del archivo visudo abierto desde el ROOT
+
+## Allow root to run any commands anywhere
+root    ALL=(ALL)       ALL
+prueba  ALL=(ALL)       ALL
+prueba2 ALL=(ALL)       /usr/bin/tar, /usr/sbin/useradd, /usr/bin/top
+
+
+
+**Doy permiso para acceder ssh a prueba2 desde el root 
+**o desde prueba1 con sudo nano /etc/....., 
+nano /etc/ssh/sshd_config
+
+
+
+**verificando desde prueba2
+sudo userdel prueba3
+sudo top
+
+**para ver los procesos que esta corriendo
+ps -aux | grep ssh 
+
+**para cambiar la contraseña a prueba
+sudo passwd prueba
+
+
+
+##DEBER 
+
+***CREAR UN USUARIO prueba3 para que no necesito sudo para
+**BORRAR USUARIOS userdel
+/usr/sbin/userdel
+
+DAR PERMISOS chmod
+/usr/bin/chmod
+
+CAMBIAR PROPIETARIO cchown
+/usr/bin/chown
+
+DEJE EJECUTAR SIN SUDO EL systemctl "system ctl restart ...."
+/usr/bin/systemctl
+
+ES DECIR DESDE MODO USUARIO NO DESDE MODO ADMINISTRADOR
+/usr/sbin/userdel
+/usr/bin/chmod
+/usr/bin/chown
+/usr/bin/systemctl
+
+
+
+
+
+**DENTRO DEL VISUDO
+prueba3 ALL=(root) NOPASSWD: /usr/sbin/userdel, /usr/bin/chmod, /usr/bin/chown, /usr/bin/systemctl
+
+**DENTRO DE PRUEBA3
+**Ingreso al archivo
+nano ~/.bashrc
+
+
+
+# User-defined aliases
+alias userdel='sudo /usr/sbin/userdel'
+alias chmod='sudo /usr/bin/chmod'
+alias chown='sudo /usr/bin/chown'
+alias systemctl='sudo /usr/bin/systemctl'
+
+
+source ~/.bashrc
+
+PARA COMPROBAR
+touch archivo.txt
+chmod 644 archivo.txt
+
+ls -l archivo.txt
+
+chown tu_usuario archivo.txt
+
+ls -l archivo.txt
+

@@ -1,0 +1,407 @@
+docker pull mariadb
+docker pull php:8.0-apache
+
+docker run -p 3306:3306 --name base_datos_mariadb -v /root/servicio_web2/database:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=dagasa -d mariadb
+docker run -p 9090:80 -v /root/servicio_web2:/var/www/html --name server_php -d --link base_datos_mariadb php:8.0-apache
+
+
+
+
+vi index.php
+
+<?php
+phpinfo();
+?>
+
+
+
+para entrar a la base de datos con nombre "base_datos_mariadb"
+
+# docker exec -it base_datos_mariadb /bin/bash
+
+para ingrsar a la base de datos
+mariadb -u root -p
+
+show databases;
+CREATE DATABASE wordpress;
+
+
+
+dentro del servicio web 2
+
+nano index.php
+==============================index======================
+
+<?php
+//Create connection
+$conn = mysqli_connect("basedatos:3306", "root", "dagasa","wordpress");
+//Check connection
+if(!$conn){
+      die("Connection failed: " . mysqli_connect_error());
+}
+echo "Connected successfully";
+
+?>
+
+================================================================
+
+entro a mi servidor php en este caso al docker, mi segundo contenedor
+
+docker exec -it server_php /bin/bash
+
+dentro del contendor
+apt-get update
+
+
+dentro del contenedor para ver direcccion
+
+cd /usr/local/lib/php/extensions
+
+
+
+vim php.ini-development
+
+:se nu
+:908
+
+============
+extension=/usr/local/lib/php/extensions/no-debug-non-zts-20200930/msqli.os
+==============
+
+no-debug-non-zts-20200930
+
+
+
+dentro de
+apt-get install wget
+#dnf install wget
+
+dentro de root instalo el archivo de wordpress
+wget https://wordpress.org/latest.tar.gz
+tar -xzvf latest.tar.gz
+rm latest.tar.gz
+
+
+ingresamos al servidor
+root@23f99584f259:/var/www/html# chown -R www-data:www-data wordpress/
+
+
+
+
+
+PARA EL RESPALDO
+
+docker network create baseservidor
+docker network connect baseservidor server_php
+docker network connect baseservidor base_datos_mariadb
+
+docker network inspect baseservidor
+
+en el root:
+
+
+docker run -d --name respaldo_c -v /root/respaldo_maria_db:/respaldo --network baseservidor php:8.0-apache
+
+
+docker exec -it respaldo_c apt-get update
+docker exec -it respaldo_c apt-get install -y cron 
+docker exec -it respaldo_c apt-get install -y nano
+docker exec -it respaldo_c crontab -e
+
+alfinal del archivo===========================
+* * * * *  /root/respaldo/respaldo.sh
+=====================================
+
+
+ingreso al contenedor
+
+creo la carpeta respaldo y el archivo respaldo.sh en el root...s54646
+mkdir respaldo
+touch respaldo.sh
+
+===========================================
+#!/bin/bash
+
+# Configura las variables de conexion a la base de datos
+DB_USER="root"
+DB_PASS="dagasa"
+DB_NAME="wordpress"
+
+echo "Iniciando respaldo a las $(date)"
+
+# Directorio donde se almacenar las copias de seguridad
+BACKUP_DIR="/root/respaldo"
+
+# Nombre del archivo de respaldo
+BACKUP_FILE="respaldoxdd_$(date +'%Y%m%d%H%M%S').sql"
+
+# Lista de tablas a respaldar
+#SQL_QUERY="SELECT * FROM wp_users;"
+TABLES_TO_BACKUP="wp_users"
+# Comando para realizar el respaldo de las tablas especficas
+mysqldump -h base_datos_mariadb -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" $TABLES_TO_BACKUP > "$BACKUP_DIR/$BACKUP_FILE"
+
+# Comprueba si el respaldo fue exitoso
+if [ $? -eq 0 ]; then
+    echo "Respaldo exitoso: $BACKUP_DIR/$BACKUP_FILE"
+else
+    echo "Error en el respaldo"
+fi
+===========================================
+
+
+
+en el root
+docker exec -it respaldo_c chmod +x /root/respaldo/respaldo.sh
+
+
+ingresar al contenedor
+
+
+
+
+ip addr add 192.168.88.146/24 dev ens160
+ip addr del 192.168.88.146/24 dev ens160
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dentro de root
+nano Dockerfile
+====================================
+#FROM ubuntu
+
+#COPY backup.sh /backup.sh
+#RUN chmod +x /backup.sh
+
+#CMD ["/backup.sh"]
+
+FROM ubuntu
+
+# Instalar el cliente MySQL
+RUN apt-get update && apt-get install -y mysql-client
+
+# Copiar el script
+COPY backup.sh /backup.sh
+RUN chmod +x /backup.sh
+
+CMD ["/backup.sh"]
+====================================
+
+
+
+en el root creamos un bakup
+touch backup.sh
+nano backup.sh
+===================
+#!/bin/bash
+counter=1
+while true; do
+  mysqldump -h ds-wordpress-6.1.1-mysql -uroot -p1234 wordpress wp_users > "/backup/backup$counter.sql"
+  counter=$((counter+1))
+  sleep 10
+done
+===================
+
+
+
+creamos el archivo yml
+touch docker-compose.yml
+nano docker-compose.yml
+
+
+============================
+version: "3"
+networks:
+    ds-wordpress-6.1.1-net:
+        driver: bridge
+
+services:
+    mariadb:
+        image: mariadb:10.6
+        container_name: ds-wordpress-6.1.1-mysql
+        tty: true
+        ports:
+            - "4208:3306"
+        volumes:
+            - "./var/libclea/mysql/:/var/lib/mysql"
+        environment:
+            MYSQL_ROOT_PASSWORD: dagasa
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: miusuario
+            MYSQL_PASSWORD: mipassword
+        networks:
+            - ds-wordpress-6.1.1-net
+
+    server:
+        image: wordpress:latest
+        container_name: ds-wordpress-6.1.1
+        ports:
+            - "4282:80"
+        volumes:
+            - "./var/www/html/:/var/www/html"
+        environment:
+            WORDPRESS_DB_USER: miusuario
+            WORDPRESS_DB_PASSWORD: mipassword
+            WORDPRESS_DB_NAME: wordpress
+            WORDPRESS_DB_HOST: ds-wordpress-6.1.1-mysql
+        depends_on:
+            - mariadb
+        networks:
+            - ds-wordpress-6.1.1-net
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: ds-phpmyadmin
+        ports:
+            - "4283:80"
+        environment:
+            PMA_HOST: ds-wordpress-6.1.1-mysql
+            MYSQL_ROOT_PASSWORD: dagasa
+        depends_on:
+            - mariadb
+        networks:
+            - ds-wordpress-6.1.1-net
+
+    db-backup:
+        image: ubuntu
+        container_name: db-backup
+        volumes:
+            - ./backup:/backup
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - mariadb
+        networks:
+            - ds-wordpress-6.1.1-net
+============================
+
+docker compose up
+
+inicio docker con 192.168.88.145:4282 en el navegador
+
+
+
+
+
+levantar el bakup
+forzar a crear el contenedor
+docker compose up --build db-backup
+
+
+docker compose down
+docker compose up
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+
+echo 'export PATH=$PATH:/var/lib/snapd/snap/bin' | sudo tee -a /etc/profile.d/snap.sh source /etc/profile.d/snap.sh
+
+
+
+
+
+nano word.yml
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mi-deployment
+spec:
+  replicas: 1  # Puedes ajustar este número según cuántos contenedores quieras ejecutar
+  selector:
+    matchLabels:
+      app: mis-contenedores
+  template:
+    metadata:
+      labels:
+        app: mis-contenedores
+    spec:
+      containers:
+        - name: ds-phpmyadmin
+          image: phpmyadmin/phpmyadmin
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+kubectl apply -f word.yml
+kubectl get pods
+
+kubectl delete pod mi-deployment-d675dcf46-hxz8r 
+
+
+
+
+
+kubectl --context microk8s apply -f word.yml
+kubectl get pods
+
+
+
+
+
+
+
+
+
+kubectl config set-context microk8s --cluster=microk8s-cluster --user=admin
+kubectl config use-context microk8s
+
+
+
+
+nano ~/.kube/config
+!!!!!!!!!!!!!!!!!!!!!!!!
+
+apiVersion: v1
+clusters: null
+contexts:
+- context:
+    cluster: microk8s-cluster
+    user: admin
+  name: microk8s
+current-context: microk8s
+kind: Config
+preferences: {}
+users: null
+
+!!!!!!!!!!!!!!!!!!!!!!!!
+
+microk8s.kubectl config set-credentials admin --token="RmxSREQvdERiRm1LejF6bFRHMlZhQUVHMGtOSlorMWtmbnJQc1dSeGdydz0K"
+
+RmxSREQvdERiRm1LejF6bFRHMlZhQUVHMGtOSlorMWtmbnJQc1dSeGdydz0K

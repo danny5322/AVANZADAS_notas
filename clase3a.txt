@@ -1,0 +1,130 @@
+Desde root añadimos el repositorio
+-ver los links del grupo
+
+en root para ver la version del docker
+docker -v
+
+para ver todos los comandos de docker
+docker -h
+
+
+docker image --help
+
+
+para revisar las imagenes cargadas
+docker images
+
+
+hay que arancar
+systemctl start docker
+
+systemctl status docker
+
+habilitar para que se prenda automaticamente el docker
+systemctl enable docker
+
+
+para ver un contenedor de ubuntu y salga todas las versiones para descargar
+sino especificamos la version a descargar se descarga la ultima
+docker search ubuntu
+
+para descargar la maquina, la ultima version
+va a descargar una imagen de ubuntu desde el repositorio de docker hub
+docker pull ubuntu
+
+
+la maquina comparte el hadware, la memoria, el disco con el docker(maq ubuntu)
+
+
+
+
+para ver las caracteristicas de la maquina descargada en el docker
+docker inspect ubuntu
+
+
+
+para arancar la maquina 
+docker run ubuntu
+
+
+para arancar la maquina y ejecutar un comando y se vuelve apagar el contenedor
+docker run ubuntu echo "hola mundo"
+
+
+
+para ver las maquinas corriendo
+docker ps
+
+para ver las maquinas apagadas
+docker ps -a
+
+
+hasta aqui sigo haciendolo dentro de root
+
+
+
+para darle un nombre al contenedor y que no se generen aleatorios
+docker run --name archivo1 ubuntu echo "hola2"
+
+llamo un interprete de comandos
+y que exista una interacion con la maquina
+cambia la palabra servidor por unos numeros
+
+docker run -it ubuntu /bin/bash
+
+para ver informacion del contenedor
+ls
+
+para ver la version
+uname -a
+cat /etc/lsb-release
+
+
+
+aqui duplico la sesion
+
+para ver los contenedores corriendo
+docker ps
+
+para conectarme a un contenedor que esta corriendo
+docker exec -it 8701862444a6 /bin/sh
+debe aparecer un #
+
+para ver quien esta conectado en el contenedor siemore root
+whoami
+
+para salir 
+exit
+
+a la imagen de ubuntu yo quiero instalarle una aplicacion
+
+
+
+dentro del contenedor con
+docker exec -it 8701862444a6 /bin/sh
+
+para actualizar el repositorio del contenedor
+apt-get update
+
+para instalar git en el contenedor, para el control de veriones
+apt-get install git
+
+
+para apagar el contenedor
+docker stop 8701862444a6
+
+
+generar una imagen que a partir de la anterior ya tenga instalado git
+
+docker commit -m "git" -a "dagasa" 8701862444a6 git/ubuntu:v1
+
+
+[root@server ~]# docker images
+REPOSITORY      TAG       IMAGE ID       CREATED       SIZE
+apache/ubuntu   v1        bfdb4f5dd9e8   6 days ago    231MB
+git/ubuntu      v1        4a1dec0d1ead   9 days ago    198MB
+ubuntu          latest    e4c58958181a   2 weeks ago   77.8MB
+
+
+a partir de estas imagenes puedo generar nuevos contenedores
+docker run -it --name git git git/ubuntu:v1 
