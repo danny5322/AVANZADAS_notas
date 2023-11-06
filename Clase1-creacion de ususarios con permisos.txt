@@ -1,5 +1,6 @@
 #esta es una linea vie
 #esta es una linea modificada68
+=======
 CLASE 1
 
 **revisamos el demonio o sevicio y dice que si la maquina se reinicia el va a levantarse nuevamente
