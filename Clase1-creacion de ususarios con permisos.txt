@@ -1,4 +1,5 @@
 #esta es una linea nueva
+#esta es una linea modificada por colaboracion
 CLASE 1
 
 **revisamos el demonio o sevicio y dice que si la maquina se reinicia el va a levantarse nuevamente
