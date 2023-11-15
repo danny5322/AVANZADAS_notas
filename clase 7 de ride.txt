@@ -120,7 +120,7 @@ mkfs.ext4 /dev/md0
 para montar el disco
 mount /dev/md0 /mnt
 
-voy a sacar un respaldo de la carpeta ect y le comprimo
+voy a sacar un respaldo de la carpeta etc y le comprimo
 se va a guardar en mt con ese nombre
 tar zcf /mnt/backup-ect.tar.gz /etc/
 
@@ -145,7 +145,6 @@ mdadm -r /dev/md0 /dev/nvme0n3p1
 
 [root@server ~]# ls /mnt/
 backup-ect.tar.gz  lost+found
-[root@server ~]# ^C
 [root@server ~]# mdadm -f /dev/md0 /dev/nvme0n3p1
 mdadm: set /dev/nvme0n3p1 faulty in /dev/md0
 [root@server ~]# cat /proc/mdstat
